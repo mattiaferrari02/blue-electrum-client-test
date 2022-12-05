@@ -6,7 +6,7 @@
  * @flow strict-local
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import ElectrumClient from 'electrum-client';
 import {
   SafeAreaView,
@@ -16,6 +16,7 @@ import {
   Text,
   useColorScheme,
   View,
+  Button
 } from 'react-native';
 
 import {
@@ -28,25 +29,25 @@ import {
 
 const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
-
+  const [electrumClient, setElectrumClient] = useState()
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  const connect = async() => {
+    const electrumPersistentPolicy = {
+      retryPeriod: 5000,
+      maxRetry: 10,
+      pingPeriod: 5000,
+      callback: null
+    }
+    const ver = await electrumClient.initElectrum({ client: "electrum-client-js", version: "1.4" }, electrumPersistentPolicy)
+    console.log(ver)
+  }
+
   useEffect(() => {
-    void (async() => {
-      const ec = new ElectrumClient(global.net, global.tls, 443, "electrum1.bluewallet.io", "tls")
-
-      const electrumPersistentPolicy = {
-        retryPeriod: 5000,
-        maxRetry: 10,
-        pingPeriod: 5000,
-        callback: null
-      }
-      const ver = await ec.initElectrum({ client: "electrum-client-js", version: "1.4" }, electrumPersistentPolicy)
-      console.log(ver)
-
-    })()
+    const ec = new ElectrumClient(global.net, global.tls, 443, "electrum1.bluewallet.io", "tls")
+    setElectrumClient(ec)
   }, [])
 
   return (
@@ -63,6 +64,7 @@ const App = () => {
           style={{
             backgroundColor: isDarkMode ? Colors.black : Colors.white,
           }}></View>
+          <Button title="connect" onPress={connect} />
       </ScrollView>
     </SafeAreaView>
   );
